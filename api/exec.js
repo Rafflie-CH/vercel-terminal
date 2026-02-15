@@ -1,24 +1,33 @@
 import { exec } from "child_process";
+import fs from "fs";
+
+const BASE = "/tmp/term";
+if (!fs.existsSync(BASE)) fs.mkdirSync(BASE, { recursive: true });
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  let body = "";
-  await new Promise(r => {
-    req.on("data", c => body += c);
-    req.on("end", r);
+  let body="";
+  await new Promise(r=>{
+    req.on("data",c=>body+=c);
+    req.on("end",r);
   });
 
-  let cmd;
-  try { cmd = JSON.parse(body).cmd; }
-  catch { return res.status(400).send("bad json"); }
+  let { cmd } = JSON.parse(body || "{}");
+  if(!cmd) return res.json({output:"no cmd"});
 
-  if (!cmd) return res.status(400).send("no cmd");
+  const full = `
+    export HOME=${BASE};
+    export TMPDIR=${BASE};
+    cd ${BASE};
+    bash -lc '${cmd.replace(/'/g,"'\\''")}'
+  `;
 
-  exec(cmd, { timeout: 8000, maxBuffer: 1024*1024 }, (e, out, err) => {
-    res.setHeader("Content-Type","application/json");
-    res.end(JSON.stringify({
-      output: out || err || String(e)
-    }));
+  exec(full, {
+    timeout: 15000,
+    maxBuffer: 1024*1024*4,
+    env: { ...process.env, HOME: BASE }
+  }, (e,out,err)=>{
+    res.json({ output: out || err || String(e) });
   });
 }
