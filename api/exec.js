@@ -20,34 +20,45 @@ export default async function handler(req,res){
   let {cmd}=JSON.parse(body||"{}");
   if(!cmd) return res.json({output:"no cmd"});
 
+  // emulate clear biar ga error
+  cmd = cmd.replace(/^clear$/gm, "printf '\\033c'");
+
+  // tulis command jadi script beneran
+  const script = BASE + "/run.sh";
+  fs.writeFileSync(script, `#!/bin/bash
+cd "${BASE}"
+${cmd}
+`);
+  fs.chmodSync(script, 0o755);
+
   // environment linux palsu tapi stabil
   const env={
-  ...process.env,
-  HOME:BASE+"/home",
-  USER:"vercel",
-  LOGNAME:"vercel",
-  TERM:"dumb",
-  FORCE_COLOR:"0",
-  NO_COLOR:"1",
-  COLORTERM:"",
-  CLICOLOR:"0",
-  CLICOLOR_FORCE:"0",
-  TMPDIR:BASE,
-  npm_config_cache:BASE+"/.npm",
-  XDG_CACHE_HOME:BASE+"/.cache",
-  PIP_CACHE_DIR:BASE+"/.cache/pip",
-  PATH:[
-    BASE+"/node_modules/.bin",
-    "/var/lang/bin",
-    "/usr/local/bin",
-    "/usr/bin",
-    "/bin"
-  ].join(":")
-};
+    ...process.env,
+    HOME:BASE+"/home",
+    USER:"vercel",
+    LOGNAME:"vercel",
+    TERM:"dumb",
+    FORCE_COLOR:"0",
+    NO_COLOR:"1",
+    COLORTERM:"",
+    CLICOLOR:"0",
+    CLICOLOR_FORCE:"0",
+    TMPDIR:BASE,
+    npm_config_cache:BASE+"/.npm",
+    XDG_CACHE_HOME:BASE+"/.cache",
+    PIP_CACHE_DIR:BASE+"/.cache/pip",
+    PATH:[
+      BASE+"/node_modules/.bin",
+      "/var/lang/bin",
+      "/usr/local/bin",
+      "/usr/bin",
+      "/bin"
+    ].join(":")
+  };
 
   execFile(
     "/bin/bash",
-    ["-c",cmd],
+    [script],
     {
       cwd:BASE,
       env,
