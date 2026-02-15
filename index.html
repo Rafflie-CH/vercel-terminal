@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>terminal</title>
+<style>
+body{background:#000;color:#00ff9c;font-family:monospace;margin:0;padding:10px}
+#term{white-space:pre-wrap}
+#input{width:100%;background:black;color:#00ff9c;border:none;outline:none;font-family:monospace}
+</style>
+</head>
+<body>
+
+<div id="term">Vercel Terminal
+type help
+</div>
+<input id="input" autofocus>
+
+<script>
+const term = document.getElementById("term");
+const input = document.getElementById("input");
+
+async function run(cmd){
+  term.textContent += "\n$ " + cmd + "\n";
+
+  if(cmd==="help"){
+    term.textContent += "basic shell only\n";
+    return;
+  }
+
+  const r = await fetch("/api/exec",{
+    method:"POST",
+    body:JSON.stringify({cmd})
+  });
+
+  const j = await r.json();
+  term.textContent += j.output + "\n";
+  window.scrollTo(0,document.body.scrollHeight);
+}
+
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    run(input.value);
+    input.value="";
+  }
+});
+</script>
+
+</body>
+</html>
