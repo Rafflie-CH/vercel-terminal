@@ -22,23 +22,28 @@ export default async function handler(req,res){
 
   // environment linux palsu tapi stabil
   const env={
-    ...process.env,
-    HOME:BASE+"/home",
-    USER:"vercel",
-    LOGNAME:"vercel",
-    TERM:"xterm",
-    TMPDIR:BASE,
-    npm_config_cache:BASE+"/.npm",
-    XDG_CACHE_HOME:BASE+"/.cache",
-    PIP_CACHE_DIR:BASE+"/.cache/pip",
-    PATH:[
-      BASE+"/node_modules/.bin",
-      "/var/lang/bin",
-      "/usr/local/bin",
-      "/usr/bin",
-      "/bin"
-    ].join(":")
-  };
+  ...process.env,
+  HOME:BASE+"/home",
+  USER:"vercel",
+  LOGNAME:"vercel",
+  TERM:"dumb",
+  FORCE_COLOR:"0",
+  NO_COLOR:"1",
+  COLORTERM:"",
+  CLICOLOR:"0",
+  CLICOLOR_FORCE:"0",
+  TMPDIR:BASE,
+  npm_config_cache:BASE+"/.npm",
+  XDG_CACHE_HOME:BASE+"/.cache",
+  PIP_CACHE_DIR:BASE+"/.cache/pip",
+  PATH:[
+    BASE+"/node_modules/.bin",
+    "/var/lang/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin"
+  ].join(":")
+};
 
   execFile(
     "/bin/bash",
